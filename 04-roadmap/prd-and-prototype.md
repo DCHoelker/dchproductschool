@@ -27,4 +27,4 @@ Why: a time-poor consumer is probably on a phone, and unreadable help doesn't co
 
 ## Prompt-to-prototype sprint
 - **Where did the prototype reveal a gap in my PRD logic? (what I had to update):** The use case is too small.
-- **My prototype, as a link or a screenshot (publish or share from your tool; in Lovable that is Share → Share Preview, in Bolt Publish → Web. No share URL? Screenshot the working flow):** https://github.com/DCHoelker/dchproductschool/blob/main/04-roadmap/streamline-spotlight-roadmap.html
+- **My prototype, as a link or a screenshot (publish or share from your tool; in Lovable that is Share → Share Preview, in Bolt Publish → Web. No share URL? Screenshot the working flow):** https://github.com/DCHoelker/dchproductschool/blob/main/04-roadmap/riverty-miss-instalment-prototype.html
