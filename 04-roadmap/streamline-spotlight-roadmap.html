@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StreamLine Spotlight · Roadmap</title>
+<style>
+:root{
+  --bg:#f6f7f9;--surface:#fff;--ink:#14181f;--muted:#5d6675;--line:#e3e6eb;--accent:#3b4cca;
+  --qw-bg:#e3f6ec;--qw-fg:#0b6b3a;--mp-bg:#e4ecff;--mp-fg:#1b4bb8;
+  --fi-bg:#fff2d6;--fi-fg:#8a5a00;--ts-bg:#fde4e4;--ts-fg:#a12121;
+  --shadow:0 1px 2px rgba(20,24,31,.06),0 2px 8px rgba(20,24,31,.04);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1218;--surface:#181c25;--ink:#eceff4;--muted:#9aa4b5;--line:#2a3040;--accent:#8c9bff;
+    --qw-bg:#12362a;--qw-fg:#6fe0a3;--mp-bg:#16264d;--mp-fg:#8fb2ff;
+    --fi-bg:#3a2e10;--fi-fg:#ffcf66;--ts-bg:#3c1a1a;--ts-fg:#ff9b9b;--shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1218;--surface:#181c25;--ink:#eceff4;--muted:#9aa4b5;--line:#2a3040;--accent:#8c9bff;
+  --qw-bg:#12362a;--qw-fg:#6fe0a3;--mp-bg:#16264d;--mp-fg:#8fb2ff;
+  --fi-bg:#3a2e10;--fi-fg:#ffcf66;--ts-bg:#3c1a1a;--ts-fg:#ff9b9b;--shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:28px clamp(16px,4vw,48px) 56px}
+header{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin:4px 0 0;font-size:14px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+button:hover,select:hover{border-color:var(--accent)}
+button:focus-visible,select:focus-visible,[contenteditable]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip{font-size:13px;padding:5px 12px;border-radius:999px}
+.chip[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:0 0 20px}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:900px){.board{grid-template-columns:1fr}}
+.lane{background:color-mix(in srgb,var(--surface) 55%,var(--bg));border:1px solid var(--line);border-radius:14px;padding:14px;min-height:140px;transition:border-color .15s,background .15s}
+.lane.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.lane h2{margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+.lane .desc{margin:2px 0 12px;color:var(--muted);font-size:13px}
+.count{background:var(--line);color:var(--muted);border-radius:999px;padding:0 9px;font-size:12px;letter-spacing:0}
+.cards{display:flex;flex-direction:column;gap:10px;min-height:40px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);cursor:grab;transition:opacity .15s,transform .15s}
+.card.dragging{opacity:.4}
+.card.dim{opacity:.25}
+.top{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+.name{font-weight:600;line-height:1.35}
+.id{color:var(--muted);font-weight:500;font-size:12px;margin-right:6px}
+.badge{white-space:nowrap;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px}
+.q-qw{background:var(--qw-bg);color:var(--qw-fg)}
+.q-mp{background:var(--mp-bg);color:var(--mp-fg)}
+.q-fi{background:var(--fi-bg);color:var(--fi-fg)}
+.q-ts{background:var(--ts-bg);color:var(--ts-fg)}
+.why{margin:8px 0 0;font-size:13.5px;color:var(--muted);border-radius:6px;padding:2px 4px;margin-left:-4px}
+.why:hover{background:var(--bg)}
+.why:empty::before{content:"Add rationale…";opacity:.6}
+.meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:10px}
+.scores{display:flex;gap:12px;font-size:12px;color:var(--muted)}
+.dots{letter-spacing:2px;color:var(--ink)}
+.actions{display:flex;gap:6px}
+.actions select,.actions button{font-size:12px;padding:3px 8px}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:14px;border:1px dashed var(--line);border-radius:10px}
+.cut{margin-top:28px}
+.cut h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 4px}
+.cut .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.cut .card{cursor:default;border-style:dashed}
+.cut .name{text-decoration:line-through;text-decoration-color:var(--muted)}
+.note{margin-top:24px;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>StreamLine <span>Spotlight</span> · Roadmap</h1>
+    <p class="sub">Team: 2 engineers + 1 designer · <span id="summary"></span></p>
+  </div>
+  <div class="tools" role="group" aria-label="Filter by quadrant">
+    <button class="chip" data-f="all" aria-pressed="true">All</button>
+    <button class="chip" data-f="Quick Win" aria-pressed="false">Quick Win</button>
+    <button class="chip" data-f="Major Project" aria-pressed="false">Major Project</button>
+    <button class="chip" data-f="Fill-In" aria-pressed="false">Fill-In</button>
+    <button class="chip" data-f="Time Sinker" aria-pressed="false">Time Sinker</button>
+    <button id="theme" aria-label="Toggle theme">◐ Theme</button>
+    <button id="reset">Reset</button>
+  </div>
+</header>
+
+<p class="legend">
+  <span><span class="badge q-qw">Quick Win</span> high impact · low effort</span>
+  <span><span class="badge q-mp">Major Project</span> high impact · high effort</span>
+  <span><span class="badge q-fi">Fill-In</span> lower impact · low effort</span>
+  <span><span class="badge q-ts">Time Sinker</span> low impact · high effort</span>
+</p>
+
+<main class="board" id="board"></main>
+
+<section class="cut" id="cutSec" aria-labelledby="cutH">
+  <h2 id="cutH">Cut List <span class="count" id="cutCount"></span></h2>
+  <p class="sub" style="margin-bottom:12px">Not being built. Restore any item to put it back in LATER.</p>
+  <div class="cards" id="cut" data-lane="CUT"></div>
+</section>
+
+<p class="note">Tip: drag cards between lanes, use the Move menu, or click a rationale to edit it. Impact and Effort are scored 1–5. Changes are saved in this browser.</p>
+
+<script>
+const LANES = [
+  {key:"NOW",  title:"Now",   desc:"Current 2-week sprint"},
+  {key:"NEXT", title:"Next",  desc:"Following 1–2 sprints"},
+  {key:"LATER",title:"Later", desc:"Backlog"}
+];
+const CLS = {"Quick Win":"q-qw","Major Project":"q-mp","Fill-In":"q-fi","Time Sinker":"q-ts"};
+const DEFAULT_WHY = {
+  "Quick Win":"High impact for low effort — ship early.",
+  "Major Project":"High impact but high effort — needs dedicated planning.",
+  "Fill-In":"Moderate impact for low effort — slot in around bigger work.",
+  "Time Sinker":"Low impact for high effort — not worth the cost right now."
+};
+const SEED = [
+  {id:5, name:'"You can adjust this later" note', i:4, e:1, q:"Quick Win", lane:"NOW"},
+  {id:3, name:'"What if I miss an instalment?" block', i:5, e:2, q:"Quick Win", lane:"NOW"},
+  {id:2, name:"Neutral slider starting value", i:4, e:1, q:"Quick Win", lane:"NOW"},
+  {id:4, name:"Post-agreement instalment adjustment", i:5, e:5, q:"Major Project", lane:"NEXT"},
+  {id:6, name:"Income guidance for variable income", i:4, e:2, q:"Quick Win", lane:"LATER"},
+  {id:10,name:"Quick path to a human at the slider", i:3, e:3, q:"Fill-In", lane:"LATER"},
+  {id:7, name:"Live preview of term and total", i:3, e:2, q:"Fill-In", lane:"LATER"},
+  {id:1, name:"Free amount input beside slider", i:3, e:2, q:"Fill-In", lane:"LATER"},
+  {id:9, name:'"Plan check" for conspicuous amounts', i:3, e:2, q:"Fill-In", lane:"LATER"},
+  {id:8, name:"Flexible start date (payday-oriented)", i:2, e:4, q:"Time Sinker", lane:"CUT"}
+];
+const KEY = "streamline-spotlight-roadmap-v1";
+let items = load();
+let filter = "all";
+
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function load(){
+  try{ const s = localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
+  return clone(SEED);
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){} }
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function dots(n){return "●".repeat(n)+"○".repeat(5-n)}
+
+function cardHTML(it, inCut){
+  const why = it.why !== undefined ? it.why : DEFAULT_WHY[it.q];
+  const opts = LANES.map(l=>`<option value="${l.key}" ${it.lane===l.key?"selected":""}>${l.title}</option>`).join("");
+  const actions = inCut
+    ? `<button data-act="restore" data-id="${it.id}">Restore</button>`
+    : `<select data-act="move" data-id="${it.id}" aria-label="Move ${esc(it.name)}">${opts}</select>
+       <button data-act="cut" data-id="${it.id}">Cut</button>`;
+  const dim = filter!=="all" && it.q!==filter ? " dim" : "";
+  return `<article class="card${dim}" draggable="${!inCut}" data-id="${it.id}">
+    <div class="top">
+      <div class="name"><span class="id">#${it.id}</span>${esc(it.name)}</div>
+      <span class="badge ${CLS[it.q]}">${it.q}</span>
+    </div>
+    <p class="why" contenteditable="true" spellcheck="false" data-why="${it.id}" aria-label="Rationale">${esc(why)}</p>
+    <div class="meta">
+      <div class="scores">
+        <span title="Impact ${it.i}/5">Impact <span class="dots">${dots(it.i)}</span></span>
+        <span title="Effort ${it.e}/5">Effort <span class="dots">${dots(it.e)}</span></span>
+      </div>
+      <div class="actions">${actions}</div>
+    </div>
+  </article>`;
+}
+
+function render(){
+  const board = document.getElementById("board");
+  board.innerHTML = LANES.map(l=>{
+    const list = items.filter(x=>x.lane===l.key);
+    return `<section class="lane" data-lane="${l.key}" aria-label="${l.title}">
+      <h2>${l.title}<span class="count">${list.length}</span></h2>
+      <p class="desc">${l.desc}</p>
+      <div class="cards">${list.length ? list.map(x=>cardHTML(x,false)).join("") : '<div class="empty">Drop a card here</div>'}</div>
+    </section>`;
+  }).join("");
+  const cut = items.filter(x=>x.lane==="CUT");
+  document.getElementById("cut").innerHTML = cut.length ? cut.map(x=>cardHTML(x,true)).join("") : '<div class="empty">Nothing cut.</div>';
+  document.getElementById("cutCount").textContent = cut.length;
+  const n = k=>items.filter(x=>x.lane===k).length;
+  document.getElementById("summary").textContent = `${n("NOW")} now · ${n("NEXT")} next · ${n("LATER")} later · ${n("CUT")} cut`;
+}
+
+/* Events */
+document.addEventListener("click",e=>{
+  const chip = e.target.closest(".chip");
+  if(chip){
+    filter = chip.dataset.f;
+    document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c===chip));
+    render(); return;
+  }
+  const b = e.target.closest("button[data-act]");
+  if(!b) return;
+  const it = items.find(x=>x.id==b.dataset.id);
+  if(b.dataset.act==="cut") it.lane="CUT";
+  if(b.dataset.act==="restore") it.lane="LATER";
+  save(); render();
+});
+document.addEventListener("change",e=>{
+  const s = e.target.closest("select[data-act='move']");
+  if(!s) return;
+  items.find(x=>x.id==s.dataset.id).lane = s.value;
+  save(); render();
+});
+document.addEventListener("focusout",e=>{
+  const w = e.target.closest("[data-why]");
+  if(!w) return;
+  const it = items.find(x=>x.id==w.dataset.why);
+  const txt = w.textContent.trim();
+  if(txt !== (it.why !== undefined ? it.why : DEFAULT_WHY[it.q])){ it.why = txt; save(); }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter" && e.target.matches("[data-why]")){ e.preventDefault(); e.target.blur(); }
+});
+
+/* Drag & drop */
+let dragId = null;
+document.addEventListener("dragstart",e=>{
+  const c = e.target.closest && e.target.closest(".card");
+  if(!c || c.getAttribute("draggable")!=="true") return;
+  dragId = c.dataset.id; c.classList.add("dragging");
+  e.dataTransfer.effectAllowed = "move";
+  try{ e.dataTransfer.setData("text/plain", dragId); }catch(_){}
+});
+document.addEventListener("dragend",()=>{
+  dragId = null;
+  document.querySelectorAll(".dragging,.over").forEach(el=>el.classList.remove("dragging","over"));
+});
+document.addEventListener("dragover",e=>{
+  const l = e.target.closest && e.target.closest(".lane");
+  if(!l || !dragId) return;
+  e.preventDefault();
+  document.querySelectorAll(".lane.over").forEach(x=>{ if(x!==l) x.classList.remove("over"); });
+  l.classList.add("over");
+});
+document.addEventListener("drop",e=>{
+  const l = e.target.closest && e.target.closest(".lane");
+  if(!l || !dragId) return;
+  e.preventDefault();
+  items.find(x=>x.id==dragId).lane = l.dataset.lane;
+  save(); render();
+});
+
+/* Theme + reset */
+document.getElementById("theme").onclick = ()=>{
+  const r = document.documentElement;
+  const dark = r.dataset.theme ? r.dataset.theme==="dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  r.dataset.theme = dark ? "light" : "dark";
+};
+document.getElementById("reset").onclick = ()=>{
+  if(!confirm("Reset roadmap to the original prioritization? Your edits will be lost.")) return;
+  items = clone(SEED); save(); render();
+};
+
+render();
+</script>
+</body>
+</html>
