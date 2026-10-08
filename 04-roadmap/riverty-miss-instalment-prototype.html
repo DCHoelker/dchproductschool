@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riverty · Plan prototype</title>
+<style>
+:root{--bg:#eef0f4;--card:#fff;--ink:#14181f;--muted:#4a5365;--line:#d9dde5;--brand:#0b5d4b;--brand-ink:#fff;--soft:#e6f3ef;--warn-bg:#fff4d6;--warn:#6b4600}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center}
+.app{width:100%;max-width:420px;min-height:100%;background:var(--card);display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--line)}
+header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:800;letter-spacing:-.02em;color:var(--brand)}
+.step{font-size:14px;color:var(--muted)}
+main{padding:18px 20px;flex:1}
+h1{font-size:22px;line-height:1.25;margin:0 0 4px;letter-spacing:-.01em}
+.ctx{margin:0 0 14px;color:var(--muted)}
+.amount{font-size:40px;font-weight:800;letter-spacing:-.02em;margin:6px 0 0}
+.amount small{font-size:16px;font-weight:500;color:var(--muted)}
+input[type=range]{width:100%;height:44px;accent-color:var(--brand);margin:2px 0}
+.range{display:flex;justify-content:space-between;color:var(--muted);font-size:14px;margin-top:-6px}
+.facts{display:flex;gap:10px;margin:12px 0 14px}
+.fact{flex:1;background:#f5f6f9;border-radius:10px;padding:8px 12px}
+.fact b{display:block;font-size:18px}
+.fact span{font-size:14px;color:var(--muted)}
+.block{background:var(--soft);border:1px solid #b9ddd3;border-radius:12px;padding:12px 14px;margin:0 0 14px}
+.block h2{font-size:16px;margin:0 0 4px}
+.block p{margin:0 0 6px}
+.block .ans{font-weight:600}
+.link{background:none;border:0;padding:10px 0 2px;margin:0;min-height:44px;color:var(--brand);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;text-align:left}
+.block.missing{background:var(--warn-bg);border-color:#e8cf8c}
+.warn{font-size:14px;color:var(--warn);font-weight:600;margin:0 0 6px}
+.btns{display:flex;gap:10px;margin-top:6px}
+button.primary,button.ghost{min-height:48px;border-radius:12px;font:inherit;font-weight:700;cursor:pointer;padding:0 18px}
+button.primary{flex:1;background:var(--brand);color:var(--brand-ink);border:0}
+button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+button:focus-visible,input:focus-visible,.link:focus-visible{outline:3px solid #1a73e8;outline-offset:2px}
+.card{border:1px solid var(--line);border-radius:12px;padding:4px 14px;margin:8px 0 14px}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.row span{color:var(--muted)}
+.tick{width:56px;height:56px;border-radius:50%;background:var(--soft);color:var(--brand);display:grid;place-items:center;font-size:30px;font-weight:800;margin:6px 0 10px}
+.stub{background:#14181f;color:#fff;border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:14px}
+footer{background:var(--warn-bg);color:var(--warn);font-size:13px;padding:8px 20px;border-top:1px solid #e8cf8c}
+footer label{display:flex;gap:8px;align-items:center;margin-top:4px;min-height:32px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><span class="logo">riverty</span><span class="step" id="step"></span></header>
+  <main id="main"></main>
+  <footer>
+    Prototype · Draft copy, not verified policy · Synthetic data
+    <label><input type="checkbox" id="missing"> Simulate missing approved copy</label>
+  </footer>
+</div>
+
+<script>
+/* ---------- Single approved copy source (FR4). Edit here only. ---------- */
+const COPY = {
+  heading: "What if I miss an instalment?",
+  answer:  "Missing one instalment does not make the full balance due at once.",
+  detail:  "We will remind you and you can still pay what you can afterwards.",
+  support: "Think you might miss one? Contact support before the due date.",
+  supportStub: "In the live product this opens support. (Prototype stub)"
+};
+const BANNED = ["guarantee","no consequences","never","nothing will happen","don't worry","dont worry"];
+
+/* ---------- Synthetic data & rules ---------- */
+const BALANCE = 1200, MIN = 20, MAX = 200, STEP = 10;
+const term = a => Math.ceil(BALANCE / a);
+const eur = n => "€" + n.toLocaleString("en-IE");
+
+/* ---------- Single state object (no router, no persistence) ---------- */
+const state = { screen: 1, amount: 110, stub: false, missingCopy: false };
+
+/* ---------- Copy validation (FR4/FR5 safety guard) ---------- */
+function copyOK(){
+  if(state.missingCopy) return false;
+  const all = (COPY.answer + " " + COPY.detail + " " + COPY.support).toLowerCase();
+  if(!COPY.answer || !COPY.support) return false;
+  if(BANNED.some(b => all.includes(b))) return false;
+  const words = (COPY.answer + " " + COPY.detail).trim().split(/\s+/).length;
+  return words <= 50;   // FR2
+}
+
+/* ---------- Reassurance block: identical on all screens (FR3, FR6) ---------- */
+function block(condensed){
+  if(!copyOK()){
+    return `<section class="block missing" aria-label="${COPY.heading}">
+      <p class="warn">⚠ Approved copy unavailable. Claim hidden.</p>
+      <button class="link" data-act="support">${COPY.support}</button>
+      ${stubHTML()}
+    </section>`;
+  }
+  return `<section class="block" aria-labelledby="bh${condensed?"c":""}">
+    <h2 id="bh${condensed?"c":""}">${COPY.heading}</h2>
+    <p class="ans">${COPY.answer}</p>
+    ${condensed ? "" : `<p>${COPY.detail}</p>`}
+    <button class="link" data-act="support">${COPY.support}</button>
+    ${stubHTML()}
+  </section>`;
+}
+function stubHTML(){ return state.stub ? `<div class="stub" role="status">${COPY.supportStub}</div>` : ""; }
+
+/* ---------- Screens ---------- */
+function screen1(){
+  const a = state.amount;
+  return `
+    <h1>Choose your monthly amount</h1>
+    <p class="ctx">Your balance: <b>${eur(BALANCE)}</b></p>
+    <div class="amount" id="amt">${eur(a)} <small>/ month</small></div>
+    <input id="slider" type="range" min="${MIN}" max="${MAX}" step="${STEP}" value="${a}" aria-label="Monthly amount in euros">
+    <div class="range"><span>${eur(MIN)}</span><span>${eur(MAX)}</span></div>
+    <div class="facts">
+      <div class="fact"><b id="term">${term(a)} months</b><span>to pay off</span></div>
+      <div class="fact"><b>${eur(BALANCE)}</b><span>total, unchanged</span></div>
+    </div>
+    ${block(false)}
+    <div class="btns"><button class="primary" data-act="to2">Continue</button></div>`;
+}
+function screen2(){
+  const a = state.amount;
+  return `
+    <h1>Review your plan</h1>
+    <div class="card">
+      <div class="row"><span>Monthly amount</span><b>${eur(a)}</b></div>
+      <div class="row"><span>Term</span><b>${term(a)} months</b></div>
+      <div class="row"><span>Total</span><b>${eur(BALANCE)}</b></div>
+    </div>
+    ${block(false)}
+    <div class="btns">
+      <button class="ghost" data-act="to1">Back</button>
+      <button class="primary" data-act="to3">Confirm plan</button>
+    </div>`;
+}
+function screen3(){
+  const a = state.amount;
+  return `
+    <div class="tick" aria-hidden="true">✓</div>
+    <h1>Your plan is set</h1>
+    <p class="ctx">${eur(a)} a month for ${term(a)} months. Total ${eur(BALANCE)}.</p>
+    ${block(true)}
+    <div class="btns"><button class="primary" data-act="done">Done</button></div>`;
+}
+
+/* ---------- Render ---------- */
+function render(){
+  document.getElementById("step").textContent = "Step " + state.screen + " of 3";
+  document.getElementById("main").innerHTML = [null, screen1, screen2, screen3][state.screen]();
+  document.getElementById("main").scrollTop = 0;
+  const s = document.getElementById("slider");
+  if(s) s.addEventListener("input", e => {
+    state.amount = +e.target.value;               // only amount, term and total change (FR6)
+    document.getElementById("amt").innerHTML = eur(state.amount) + " <small>/ month</small>";
+    document.getElementById("term").textContent = term(state.amount) + " months";
+  });
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  const act = b.dataset.act;
+  if(act === "support"){ state.stub = !state.stub; }       // stub only, no external link
+  if(act === "to1") state.screen = 1;
+  if(act === "to2") state.screen = 2;
+  if(act === "to3"){ state.screen = 3; state.stub = false; }
+  if(act === "done"){ state.screen = 1; state.amount = 110; state.stub = false; }
+  render();
+});
+document.getElementById("missing").addEventListener("change", e => { state.missingCopy = e.target.checked; render(); });
+
+render();
+</script>
+</body>
+</html>
